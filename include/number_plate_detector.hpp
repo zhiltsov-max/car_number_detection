@@ -11,6 +11,7 @@ public:
     Number getNumber(const cv::Mat& frame);
 
 private:
+    class Recognizer;
 };
 
 #endif // NUMBER_PLATE_DETECTOR_H
