@@ -1,4 +1,4 @@
-set(target ${CAR_NUMBER_DETECT_LIBRARY})
+set(target "car_number_detector")
 
 FILE(GLOB hdrs "*.h*" "${CAR_NUMBER_DETECT_INCLUDE}/*.h*")
 FILE(GLOB srcs "*.cpp")
