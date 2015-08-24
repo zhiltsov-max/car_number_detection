@@ -13,21 +13,15 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE})
 
-set(CAR_NUMBER_DETECT_LIBRARY ${PROJECT_NAME})
-set(CAR_NUMBER_DETECT_TESTS   "${PROJECT_NAME}_test")
 set(CAR_NUMBER_DETECT_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/include")
-
-include_directories("${CAR_NUMBER_DETECT_INCLUDE}")
-# include_directories("${CMAKE_CURRENT_SOURCE_DIR}/3rdparty")
 
 find_package(OpenCV REQUIRED)
 set(LIBRARY_DEPS ${OpenCV_LIBS})
 
+include_directories("${CAR_NUMBER_DETECT_INCLUDE}")
+
 # BUILD
-# add_subdirectory(3rdparty)
 add_subdirectory(src)
-# add_subdirectory(test)
-# add_subdirectory(samples)
 
 # REPORT
 message( STATUS "")

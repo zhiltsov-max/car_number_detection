@@ -5,5 +5,5 @@ FILE(GLOB srcs "*.cpp")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-ADD_LIBRARY(${target} STATIC ${srcs} ${hdrs})
-TARGET_LINK_LIBRARIES(${target} ${LIBRARY_DEPS})
+add_executable(${target} ${srcs} ${hdrs})
+target_link_libraries(${target} ${LIBRARY_DEPS})
