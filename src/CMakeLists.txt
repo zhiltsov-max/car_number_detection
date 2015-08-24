@@ -7,3 +7,11 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 add_executable(${target} ${srcs} ${hdrs})
 target_link_libraries(${target} ${LIBRARY_DEPS})
+
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+if(CMAKE_BUILD_TYPE MATCHES "Debug")
+	message(STATUS "DEBUG!")
+	set_property(TARGET ${target} APPEND PROPERTY COMPILE_DEFINITIONS "_DEBUG_")
+endif()
