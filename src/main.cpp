@@ -15,28 +15,29 @@ II. Plate recognition
 
 void printHelp() {
     std::cout << 
-        "\tUsage: <image> [-t, --train <classifierName>; -h, --help]" << std::endl <<
-        std::endl <<
-        "-t <classifier name>: Train a specified classifier" <<std::endl;
+        "\tUsage: <image> [-t, --train <classifierName>; -h, --help]" << std::endl;
 }
 
 static const char* params = 
-    "{ 1 | image | Path to target image    }"
-    "{ h | help  | Print help              }"
-    "{ t | train | Train classifier <name> }";
+    "{ 1 | image |       | Path to target image    }"
+    "{ h | help  | false | Print help              }"
+    "{ t | train |       | Train classifier <name> }";
 
 int main(int argc, char* argv[]) {
 	cv::CommandLineParser parser(argc, argv, params);
 	std::string imagePath = parser.get<std::string>("image");
     std::string classifierName = parser.get<std::string>("train");
 	
-    if (classifierName.empty() && imagePath.empty()) {
+    if (parser.get<bool>("help") || classifierName.empty() && imagePath.empty())  {
         printHelp();
+        parser.printParams();
         return 0;
     }
     
     if (classifierName.empty() == false) {
         // TO DO:
+        std::cout << "Training is not implemented yet." << std::endl;
+        return 0;
     }
 
     if (imagePath.empty() == false) {

@@ -1,0 +1,8 @@
+#ifndef PLATE_RECOGNIZER_H
+#define PLATE_RECOGNIZER_H
+
+
+
+
+
+#endif // PLATE_RECOGNIZER_H
