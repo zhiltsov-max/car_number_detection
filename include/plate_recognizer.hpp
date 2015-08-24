@@ -3,6 +3,8 @@
 
 #include "number_plate_detector.hpp"
 #include "opencv2\core\core.hpp"
+#include "symbol_recognizer.h"
+
 
 class TNumberPlateDetector::Recognizer {
 public:
@@ -26,6 +28,8 @@ private:
     SymbolFrames symbolFrames;
 
     bool verifySymbolSize(const cv::Mat& bounds);
+
+    SymbolRecognizer symbolRecognizer;
 };
 
 #endif // PLATE_RECOGNIZER_H

@@ -31,6 +31,7 @@ TNumberPlateDetector::Number TNumberPlateDetector::Recognizer::recognizeNumber(c
     cv::threshold(plate, img_thresh, RECOGNIZER_THRESHOLD, RECOGNIZER_THRESHOLD_MAX, CV_THRESH_BINARY_INV);
 
     cv::blur(img_thresh, img_thresh, cv::Size(3, 3));
+
 #if defined(_DEBUG_)
     cv::imshow("Thresh", img_thresh);
 #endif
@@ -49,28 +50,22 @@ TNumberPlateDetector::Number TNumberPlateDetector::Recognizer::recognizeNumber(c
     cv::waitKey();
 #endif
 
-    for (auto it = contours.begin(); it != contours.end(); ++it) {
+    for (auto it = contours.cbegin(), iend = contours.cend(); it != iend; ++it) {
         cv::Rect symbolBounds = cv::boundingRect(*it);
         cv::Mat symbol = img_thresh(
             cv::Range(symbolBounds.y, symbolBounds.y + symbolBounds.height),
             cv::Range(symbolBounds.x, symbolBounds.x + symbolBounds.width)            
             ).clone();
-        if (verifySymbolSize(symbol) == false) {
-            it = contours.erase(it);
-            if (it != contours.end()) {
-                break;
-            }
+        if (verifySymbolSize(symbol) == true) {
+            symbolFrames.emplace_back(symbol);
         }
     }
 
 #if defined(_DEBUG_)
-    img_contours.setTo(cv::Scalar(0));
-    std::cout << "Found contours: " << contours.size() << std::endl;
-    for (auto it = contours.cbegin(), iend = contours.cend(); it != iend; ++it) {
-        cv::Scalar color(255);
-        cv::drawContours(img_contours, contours, it - contours.cbegin(), color, CV_FILLED);
+    std::cout << "Found contours: " << symbolFrames.size() << std::endl;
+    for (auto it = symbolFrames.cbegin(), iend = symbolFrames.cend(); it != iend; ++it) {
+        cv::imshow(std::to_string(it - symbolFrames.cbegin()), *it);
     }
-    cv::imshow("Accepted contours", img_contours);
     cv::waitKey();
 #endif
 
@@ -83,11 +78,10 @@ bool TNumberPlateDetector::Recognizer::verifySymbolSize(const cv::Mat& bounds) {
     double usedArea = cv::countNonZero(bounds);
     double fullArea = bounds.cols * bounds.rows;
     double percent = usedArea / fullArea;
-    if ((percent < symbolParameters.maxUsedAreaPercent) && 
-        (symbolParameters.minAspectRatio < charAspect) && 
-        (charAspect < maxAspectRatio) &&
-        (symbolParameters.minHeight <= bounds.rows) && 
-        (bounds.rows < symbolParameters.maxHeight))
+    if ((percent < symbolParameters.maxUsedAreaPercent) &&
+        (symbolParameters.minAspectRatio < charAspect) && (charAspect < maxAspectRatio) &&
+        (symbolParameters.minHeight <= bounds.rows) && (bounds.rows < symbolParameters.maxHeight)
+       )
     {
         return true;
     } else {
