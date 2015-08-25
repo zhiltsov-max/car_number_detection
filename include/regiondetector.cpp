@@ -192,6 +192,8 @@ vector <Mat> RegionDetector::floodfillmask()
             cvtColor(resultResized, grayResult, CV_BGR2GRAY);  
             blur(grayResult, grayResult, Size(3,3)); 
             grayResult=histeq(grayResult); 
+            //TODO remove save+============================
+            imwrite(std::to_string((_Longlong)i)+".jpg",grayResult);
 
             plates.push_back(grayResult);
             imshow("Contours", grayResult);            
