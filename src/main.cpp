@@ -35,8 +35,9 @@ int main(int argc, char* argv[]) {
     }
     
     if (classifierName.empty() == false) {
-        // TO DO:
-        std::cout << "Training is not implemented yet." << std::endl;
+        TNumberPlateDetector detector;
+        detector.train();
+
         return 0;
     }
 
