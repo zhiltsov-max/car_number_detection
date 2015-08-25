@@ -2,7 +2,7 @@
 #include <time.h>
 
 bool RegionDetector::verifySizes(RotatedRect rr){  
-    float error = 0.3; 
+    float error = 0.4; 
     //Car plate size: 520x112 aspect 4,7272 
     float aspect = 4.7272; 
     //Set a min and max area. All other patchs are discarded 
