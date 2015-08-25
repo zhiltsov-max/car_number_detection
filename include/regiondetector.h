@@ -12,15 +12,20 @@
 using namespace cv;
 class RegionDetector
 {
+    bool showimage;
 	Mat img_temp;
+    Mat src;
+    vector <RotatedRect> rects;
+
     Mat histeq(Mat src);
     bool verifySizes(RotatedRect rr);
+    void preprocessing();
+    void getContours();
+    vector <Mat> floodfillmask();
 public:
-
 	RegionDetector(void);
+    RegionDetector(bool si);
 	virtual ~RegionDetector(void){}
-    void threshold(Mat src);
-	void close();
-    void getMask();
+    vector <Mat> proceed(Mat _src);
 };
 
