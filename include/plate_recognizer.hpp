@@ -15,6 +15,7 @@ public:
 
         typedef std::vector<cv::Rect> Groups;
         Groups groups;
+        cv::Size size;
         
         struct SymbolParameters {
             double minHeight;
@@ -49,6 +50,7 @@ private:
     
     SymbolGroup determineSymbolGroup(const cv::Rect& position, const cv::Size& plateSize);
 
+    void preprocessImage(const cv::Mat& plate, cv::Mat& out);
     bool verifySymbolFrame(const SymbolFrame& frame, const cv::Mat& plate);
     bool verifySymbolSize(const cv::Mat& bounds);
     bool verifySymbolPosition(const cv::Rect& position, const cv::Size& plateSize);

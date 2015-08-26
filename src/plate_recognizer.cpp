@@ -32,6 +32,8 @@ const TNumberPlateDetector::Recognizer::PlateParameters& TNumberPlateDetector::R
         pp.groups.push_back(cv::Rect(427, 13, 42, 58)); // region #2
         pp.groups.push_back(cv::Rect(474, 13, 42, 58)); // region #3
 
+        pp.size = cv::Size(520, 112);
+
         pp.symbolParameters.acceptedError = RECOGNIZER_SYMBOL_ACCEPTED_ASPECT_ERROR;
         pp.symbolParameters.aspectRatio = 42.0 / 76.0;
         pp.symbolParameters.minHeight = 42.0 * 0.7;
@@ -49,19 +51,34 @@ TNumberPlateDetector::Recognizer::PlateParameters::SymbolParameters::SymbolParam
     maxUsedAreaPercent(0.8)
 {}
 
-TNumberPlateDetector::Number TNumberPlateDetector::Recognizer::recognizeNumber(const cv::Mat& plate) {
-    CV_Assert(plate.type() == CV_8UC1);
-
+void TNumberPlateDetector::Recognizer::preprocessImage(const cv::Mat& plate, cv::Mat& out) {
     cv::Mat img_thresh;
     cv::threshold(plate, img_thresh, RECOGNIZER_THRESHOLD, RECOGNIZER_THRESHOLD_MAX, CV_THRESH_BINARY_INV);
-
     cv::blur(img_thresh, img_thresh, cv::Size(3, 3));
+
+    cv::Size size(img_thresh.cols, img_thresh.rows);
+    if (size != plateParameters.size) {
+        if (size.area() < plateParameters.size.area()) {
+            cv::resize(img_thresh, img_thresh, plateParameters.size, 0, 0, CV_INTER_CUBIC);
+        } else {
+            cv::resize(img_thresh, img_thresh, plateParameters.size, 0, 0, CV_INTER_AREA);
+        }
+    }
 
 #if defined(_DEBUG_)
     cv::imshow("Thresh", img_thresh);
 #endif
 
-    cv::Mat img_contours = img_thresh.clone();
+    out = img_thresh;
+}
+
+TNumberPlateDetector::Number TNumberPlateDetector::Recognizer::recognizeNumber(const cv::Mat& plate) {
+    CV_Assert(plate.type() == CV_8UC1);
+
+    cv::Mat img;
+    preprocessImage(plate, img);
+
+    cv::Mat img_contours = img.clone();
     std::vector<std::vector< cv::Point >> contours;
     cv::findContours(img_contours, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE);
 
@@ -72,7 +89,7 @@ TNumberPlateDetector::Number TNumberPlateDetector::Recognizer::recognizeNumber(c
         cv::drawContours(img_contours, contours, it - contours.cbegin(), color);
     }
     cv::imshow("Contours", img_contours);
-    cv::waitKey();
+    //cv::waitKey();
 #endif
 
     SymbolFrames symbolFrames;
@@ -80,24 +97,27 @@ TNumberPlateDetector::Number TNumberPlateDetector::Recognizer::recognizeNumber(c
     for (auto it = contours.cbegin(), iend = contours.cend(); it != iend; ++it) {
         SymbolFrame frame;
         frame.position = cv::boundingRect(*it);
-        frame.frame = img_thresh(
+        frame.frame = img(
             cv::Range(frame.position.y, frame.position.y + frame.position.height),
             cv::Range(frame.position.x, frame.position.x + frame.position.width)            
             ).clone();
 
-        if (verifySymbolFrame(frame, img_thresh) == true) {
-            frame.group = determineSymbolGroup(frame.position, cv::Size(img_thresh.cols, img_thresh.rows));
+        if (verifySymbolFrame(frame, img) == true) {
+            frame.group = determineSymbolGroup(frame.position, cv::Size(img.cols, img.rows));
+            if (plateParameters.groups.size() <= frame.group) {
+                continue;
+            }
 
             symbolFrames.push_back(frame);
         }
     }
 
 #if defined(_DEBUG_)
-    //std::cout << "Found contours: " << symbolFrames.size() << std::endl;
-    //for (auto it = symbolFrames.cbegin(), iend = symbolFrames.cend(); it != iend; ++it) {
-    //    cv::imshow(std::to_string(it - symbolFrames.cbegin()), *it);
-    //}
-    //cv::waitKey();
+    std::cout << "Found contours: " << symbolFrames.size() << std::endl;
+    for (auto it = symbolFrames.cbegin(), iend = symbolFrames.cend(); it != iend; ++it) {
+        cv::imshow(std::to_string(it - symbolFrames.cbegin()), *it);
+    }
+    cv::waitKey();
 #endif
 
     Number number;
@@ -183,7 +203,7 @@ float test(const cv::Mat& samples, const cv::Mat& classes, SymbolRecognizer& rec
 
 void TNumberPlateDetector::Recognizer::train() {
     const int classCount = 23;
-    cv::Mat trainData, trainClasses, data, classes, samples, samples_, samplesClasses;
+    cv::Mat trainData, trainClasses, data, classes, samples, samplesClasses;
 
     std::ifstream info("recognizer/data.txt");
     if (info.is_open() == false) {
@@ -192,8 +212,6 @@ void TNumberPlateDetector::Recognizer::train() {
     }
 
     int i = 0;
-    int cat = 0;
-    cv::Mat img;
     while (info.good() == true) {
         std::string img_name;
         std::string img_class_;
@@ -220,7 +238,6 @@ void TNumberPlateDetector::Recognizer::train() {
     symbolRecognizer.prepareTrainData(data(cv::Range(trainDataBegin, trainDataBegin + trainDataSize), cv::Range(0, data.cols)).clone(), trainData);
     samples = data(cv::Range(0, trainDataBegin), cv::Range(0, data.cols)).clone();
     samples.push_back(data(cv::Range(trainDataBegin + trainDataSize, data.rows), cv::Range(0, data.cols)));
-    //symbolRecognizer.prepareTrainData(samples, samples_);
 
     trainClasses = classes(cv::Range(trainDataBegin, trainDataBegin + trainDataSize), cv::Range(0, classes.cols)).clone();
     samplesClasses = classes(cv::Range(0, trainDataBegin), cv::Range(0, classes.cols)).clone();

@@ -4,14 +4,6 @@
 #include "opencv2\highgui\highgui.hpp"
 #include "number_plate_detector.hpp"
 
-/* Algorithm
-I. Plate detection
-1. Segmentation
-2. Classification 
-II. Plate recognition
-1. Segmentation
-2. Classification
-*/
 
 void printHelp() {
     std::cout << 
@@ -25,26 +17,22 @@ static const char* params =
 
 int main(int argc, char* argv[]) {
 	cv::CommandLineParser parser(argc, argv, params);
-    std::string imagePath = parser.get<std::string>("image");
-	bool train = parser.get<bool>("train");
 
     if (parser.get<bool>("help") || parser.get<bool>("train") && parser.get<bool>("image"))  {
         printHelp();
         parser.printParams();
         return 0;
     }
-    
+
+    bool train = parser.get<bool>("train");
     if (train == true) {
-        try {
-            TNumberPlateDetector detector;
-            detector.train();
-        } catch (std::exception& e) {
-            std::cout << e.what() << std::endl;
-        }
+        TNumberPlateDetector detector;
+        detector.train();
 
         return 0;
     }
 
+    std::string imagePath = parser.get<std::string>("image");
     if (imagePath.empty() == false) {
         cv::Mat image = cv::imread(imagePath);
         CV_Assert(image.empty() == false);
