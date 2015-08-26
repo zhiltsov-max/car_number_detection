@@ -15,28 +15,32 @@ II. Plate recognition
 
 void printHelp() {
     std::cout << 
-        "\tUsage: <image> [-t, --train <classifierName>; -h, --help]" << std::endl;
+        "\tUsage: <image> [-t, --train; -h, --help]" << std::endl;
 }
 
 static const char* params = 
-    "{ 1 | image |       | Path to target image    }"
-    "{ h | help  | false | Print help              }"
-    "{ t | train |       | Train classifier <name> }";
+    "{ 1 | image |       | Path to target image }"
+    "{ h | help  | false | Print help           }"
+    "{ t | train | false | Train classifier     }";
 
 int main(int argc, char* argv[]) {
 	cv::CommandLineParser parser(argc, argv, params);
     std::string imagePath = parser.get<std::string>("image");
-    std::string classifierName = parser.get<std::string>("train");
-	
-    if (parser.get<bool>("help") || classifierName.empty() && imagePath.empty())  {
+	bool train = parser.get<bool>("train");
+
+    if (parser.get<bool>("help") || parser.get<bool>("train") && parser.get<bool>("image"))  {
         printHelp();
         parser.printParams();
         return 0;
     }
     
-    if (classifierName.empty() == false) {
-        TNumberPlateDetector detector;
-        detector.train();
+    if (train == true) {
+        try {
+            TNumberPlateDetector detector;
+            detector.train();
+        } catch (std::exception& e) {
+            std::cout << e.what() << std::endl;
+        }
 
         return 0;
     }

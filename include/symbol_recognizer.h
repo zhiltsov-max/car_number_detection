@@ -13,6 +13,7 @@ public:
 
     void load(const char* fileName);
     void train(const cv::Mat& trainData, const cv::Mat& appearances, const char* outputfileName);
+    void prepareTrainData(const cv::Mat& trainData, cv::Mat& out);
 
     SymbolClass recognizeSymbol(const cv::Mat& symbol);
 
@@ -33,7 +34,7 @@ private:
     typedef std::vector<SymbolInfo> Classes;
     Classes classes;
 
-    typedef cv::ml::ANN_MLP ANN;
+    typedef cv::NeuralNet_MLP ANN;
     ANN recognizer;
 };
 

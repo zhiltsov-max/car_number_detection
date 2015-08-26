@@ -46,13 +46,13 @@ void SymbolRecognizer::findHistograms(const cv::Mat& img, SymbolRecognizer::Feat
     }
 
     // normalize
-    // TO DO: do in other way, divide to MAX_VALUE = width (height) * 255
     double min = 0.0;
-    double max = 0.0;
-    cv::minMaxLoc(features.vhist, &min, &max);
+    double max = 255.0; //0.0;
+    //cv::minMaxLoc(features.vhist, &min, &max);
     features.vhist *= 1.0 / (max - min);
 
-    cv::minMaxLoc(features.hhist, &min, &max);
+    max = 255.0;
+    //cv::minMaxLoc(features.hhist, &min, &max);
     features.hhist *= 1.0 / (max - min);
 }
 
@@ -62,10 +62,18 @@ void SymbolRecognizer::extractFeatures(const cv::Mat& img, Features& features) {
     features.hhist = features.completed(cv::Range(0, 1), cv::Range(0, img.rows));
     features.vhist = features.completed(cv::Range(0, 1), cv::Range(img.rows, img.rows + img.cols));
     findHistograms(img, features);
-
-    features.imgSample;
+        
     cv::resize(img, features.imgSample, FRAME_SIZE, 0, 0, CV_INTER_AREA); //maybe Lanczos
-    features.imgSample.copyTo(features.completed(cv::Range(0, 1), cv::Range(img.rows + img.cols, features.completed.cols)));
+    features.imgSample = features.imgSample.reshape(0, 1);
+    features.imgSample.copyTo(features.completed(cv::Range(0, 1), cv::Range(features.hhist.total() + features.vhist.total(), features.completed.cols)));
+}
+
+void SymbolRecognizer::setClassCount(size_t count) {
+    classes.resize(count);
+}
+
+void SymbolRecognizer::addSymbolInfo(const SymbolClass& class_, const SymbolInfo& info) {
+    classes[class_] = info;
 }
 
 void SymbolRecognizer::train(const cv::Mat& trainData, const cv::Mat& appearances, const char* outputFileName) {
@@ -92,4 +100,14 @@ void SymbolRecognizer::train(const cv::Mat& trainData, const cv::Mat& appearance
 
 void SymbolRecognizer::load(const char* fileName) {
     recognizer.load(fileName);
+}
+
+void SymbolRecognizer::prepareTrainData(const cv::Mat& trainData, cv::Mat& out) {
+    out = cv::Mat();
+    for (int row = 0; row < trainData.rows; ++row) {
+        Features features;
+        features.imgSample = trainData.row(row).reshape(0, 10);
+        extractFeatures(features.imgSample, features);
+        out.push_back(features.completed);
+    }
 }

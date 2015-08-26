@@ -21,15 +21,15 @@ public:
             double maxHeight;
             double acceptedError;
             double aspectRatio;
-            double minAspectRatio;
             double maxUsedAreaPercent;
 
             SymbolParameters();    
         };
 
         SymbolParameters symbolParameters;
-
-        static const PlateParameters RUSSIAN;
+        
+        static PlateParameters* RUSSIAN_;
+        static const PlateParameters& RUSSIAN();
     };
     const PlateParameters& getPlateParameters() const;
     PlateParameters& getPlateParameters();
