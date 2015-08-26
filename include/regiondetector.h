@@ -12,9 +12,10 @@
 using namespace cv;
 class RegionDetector
 {
+private:
 	Mat img_temp;
     Mat histeq(Mat src);
-    bool verifySizes(RotatedRect rr);
+    bool verifySizes(const RotatedRect& rect);
 public:
 
 	RegionDetector(void);
