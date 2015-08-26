@@ -91,21 +91,20 @@ void RegionDetector::getContours()
 		    rects.push_back(rr);
 	    }
     }
-    std::cout<<rects.size();
     // Draw blue contours on a white image 
     src.copyTo(img_temp); 
     cv::drawContours(img_temp,contours, 
             -1,  // draw all contours 
              cv::Scalar(255,0,0),// in blue
              1); // thickness
-    imshow("contours",img_temp);
+    if (showimage)
+        imshow("contours",img_temp);
 }
 vector <Mat> RegionDetector::floodfillmask()
 {
     vector <Mat> plates;
     for(int i=0; i< rects.size(); i++)
     { 
-        std::cout<<"true\n";
         //For better rect cropping for each posible box 
         //Make floodfill algorithm because the plate has white background 
         //And then we can retrieve more clearly the contour box 
@@ -130,7 +129,6 @@ vector <Mat> RegionDetector::floodfillmask()
             seed.x=rects[i].center.x+rand()%(int)minSize-(minSize/2); 
             seed.y=rects[i].center.y+rand()%(int)minSize-(minSize/2); 
             circle(img_temp, seed, 1, Scalar(0,255,255), -1);
-            imshow("circle", img_temp);
             int area = floodFill(  src,
                                    mask,
                                    seed,
@@ -140,7 +138,8 @@ vector <Mat> RegionDetector::floodfillmask()
            Scalar(upDiff,upDiff,upDiff),
                                   flags); 
         }
-        imshow("MASK", mask);
+        if (showimage)
+            imshow("MASK", mask);
 
         vector<Point> pointsInterest; 
         Mat_<uchar>::iterator itMask = mask.begin<uchar>(); 
@@ -159,9 +158,9 @@ vector <Mat> RegionDetector::floodfillmask()
             for( int j = 0; j < 4; j++ )
             {
                 line(img_temp, rect_points[j], rect_points[(j+1)%4], Scalar(0,0,255));  
-                std::cout<< "red";
             }
-            imshow("red",img_temp);
+            if (showimage)
+                imshow("red",img_temp);
             //матрица поворота
             float r = (float)minRect.size.width / (float)minRect.size.height; 
             float angle = minRect.angle;     
@@ -172,7 +171,6 @@ vector <Mat> RegionDetector::floodfillmask()
             //поворачиваем картинку 
             Mat img_rotated; 
             warpAffine(src, img_rotated, rotmat, src.size(), CV_INTER_CUBIC); 
-            imshow("Contour1s", img_rotated);
 
             //вырезаем кусок
             Size rect_size=minRect.size; 
@@ -180,12 +178,10 @@ vector <Mat> RegionDetector::floodfillmask()
                 std::swap(rect_size.width, rect_size.height); 
             Mat img_crop; 
             getRectSubPix(img_rotated, rect_size, minRect.center, img_crop); 
-            imshow("crop", img_crop);
  
             Mat resultResized; 
             resultResized.create(33,144, CV_8UC3); 
             resize(img_crop, resultResized, resultResized.size(), 0, 0, INTER_CUBIC); 
-            imshow("rs", resultResized);
 
             //выравниваем изображение 
             Mat grayResult; 
@@ -196,8 +192,8 @@ vector <Mat> RegionDetector::floodfillmask()
             imwrite(std::to_string((_Longlong)i)+".jpg",grayResult);
 
             plates.push_back(grayResult);
-            imshow("Contours", grayResult);            
-            std::cout << plates.size();
+            if (showimage)
+                imshow("Contours", grayResult);            
         } 
     }
     return plates;
