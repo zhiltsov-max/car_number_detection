@@ -25,7 +25,7 @@ static const char* params =
 
 int main(int argc, char* argv[]) {
 	cv::CommandLineParser parser(argc, argv, params);
-	std::string imagePath = parser.get<std::string>("image");
+    std::string imagePath = parser.get<std::string>("image");
     std::string classifierName = parser.get<std::string>("train");
 	
     if (parser.get<bool>("help") || classifierName.empty() && imagePath.empty())  {

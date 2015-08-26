@@ -28,6 +28,8 @@ public:
         };
 
         SymbolParameters symbolParameters;
+
+        static const PlateParameters RUSSIAN;
     };
     const PlateParameters& getPlateParameters() const;
     PlateParameters& getPlateParameters();

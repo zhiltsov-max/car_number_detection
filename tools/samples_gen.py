@@ -27,6 +27,7 @@ if (__name__ == "__main__"):
 		img = Image.new("1", (args.width, args.height), (0))
 		draw = ImageDraw.Draw(img)
 		draw.text((1, -2), symbols[i], (255), font = font)
-		symbol_images.append(draw)	
+		symbol_images.append(draw)
+
+		name = "p_" + str(i)
 		img.save("p_" + str(i) + ".png", "PNG")
-		print "Image saved: ", "p_" + str(i) + ".png"

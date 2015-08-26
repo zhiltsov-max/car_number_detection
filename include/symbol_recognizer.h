@@ -33,7 +33,7 @@ private:
     typedef std::vector<SymbolInfo> Classes;
     Classes classes;
 
-    typedef cv::NeuralNet_MLP ANN;
+    typedef cv::ml::ANN_MLP ANN;
     ANN recognizer;
 };
 

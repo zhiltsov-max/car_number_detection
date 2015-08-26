@@ -1,6 +1,7 @@
 #include "symbol_recognizer.h"
 #include "opencv2\imgproc\imgproc.hpp"
 
+
 const double SymbolRecognizer::SYMBOL_ACCEPT_THRESHOLD = 0.75;
 const SymbolRecognizer::SymbolClass SymbolRecognizer::UNRECOGNIZED_SYMBOL = -1;
 const cv::Size2i SymbolRecognizer::FRAME_SIZE (10, 10);

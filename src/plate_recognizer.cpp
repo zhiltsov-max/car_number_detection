@@ -14,6 +14,15 @@ static const double RECOGNIZER_SYMBOL_ASPECT_RATIO = 45.0 / 77.0;
 static const double RECOGNIZER_SYMBOL_ACCEPTED_ASPECT_ERROR = 0.35;
 static const double RECOGNIZER_SYMBOL_MIN_ASPECT_RATIO = 0.2;
 
+TNumberPlateDetector::Recognizer::PlateParameters russian_init() {
+    TNumberPlateDetector::Recognizer::PlateParameters pp;
+    pp.groupAppearanceThreshold = 0.8;
+
+    // GOST 50577-93
+    pp.groups.push_back(cv::Rect(30, 68, 58, 42));
+}
+const TNumberPlateDetector::Recognizer::PlateParameters::RUSSIAN = russian_init();
+
 TNumberPlateDetector::Recognizer::PlateParameters::SymbolParameters::SymbolParameters() :
     minHeight(15), 
     maxHeight(28),
