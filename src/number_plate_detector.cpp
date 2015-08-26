@@ -16,6 +16,7 @@ TNumberPlateDetector::Number TNumberPlateDetector::getNumber(const cv::Mat& fram
     cv::Mat  monochrome;
     cv:cvtColor(frame, monochrome, CV_BGR2GRAY);
     Recognizer recognizer;
+    recognizer.getPlateParameters() = Recognizer::PlateParameters::RUSSIAN();
     return recognizer.recognizeNumber(monochrome);    
 }
 

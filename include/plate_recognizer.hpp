@@ -15,19 +15,22 @@ public:
 
         typedef std::vector<cv::Rect> Groups;
         Groups groups;
+        cv::Size size;
         
         struct SymbolParameters {
             double minHeight;
             double maxHeight;
             double acceptedError;
             double aspectRatio;
-            double minAspectRatio;
             double maxUsedAreaPercent;
 
             SymbolParameters();    
         };
 
         SymbolParameters symbolParameters;
+        
+        static PlateParameters* RUSSIAN_;
+        static const PlateParameters& RUSSIAN();
     };
     const PlateParameters& getPlateParameters() const;
     PlateParameters& getPlateParameters();
@@ -47,6 +50,7 @@ private:
     
     SymbolGroup determineSymbolGroup(const cv::Rect& position, const cv::Size& plateSize);
 
+    void preprocessImage(const cv::Mat& plate, cv::Mat& out);
     bool verifySymbolFrame(const SymbolFrame& frame, const cv::Mat& plate);
     bool verifySymbolSize(const cv::Mat& bounds);
     bool verifySymbolPosition(const cv::Rect& position, const cv::Size& plateSize);

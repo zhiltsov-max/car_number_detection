@@ -13,6 +13,7 @@ public:
 
     void load(const char* fileName);
     void train(const cv::Mat& trainData, const cv::Mat& appearances, const char* outputfileName);
+    void prepareTrainData(const cv::Mat& trainData, cv::Mat& out);
 
     SymbolClass recognizeSymbol(const cv::Mat& symbol);
 
