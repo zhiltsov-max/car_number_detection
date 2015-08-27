@@ -23,11 +23,11 @@ const TNumberPlateDetector::Recognizer::PlateParameters& TNumberPlateDetector::R
 
         // GOST 50577-93
         pp.groups.push_back(cv::Rect(30, 34, 42, 58)); // first letter
-        pp.groups.push_back(cv::Rect(82, 16, 42, 76)); // first digit
-        pp.groups.push_back(cv::Rect(134, 16, 42, 76)); // second digit
-        pp.groups.push_back(cv::Rect(186, 16, 42, 76)); // third digit
-        pp.groups.push_back(cv::Rect(238, 34, 42, 58)); // second letter
-        pp.groups.push_back(cv::Rect(285, 34, 42, 58)); // third letter
+        pp.groups.push_back(cv::Rect(82, 16, 52, 76)); // first digit
+        pp.groups.push_back(cv::Rect(144, 16, 52, 76)); // second digit
+        pp.groups.push_back(cv::Rect(206, 16, 52, 76)); // third digit
+        pp.groups.push_back(cv::Rect(268, 34, 42, 58)); // second letter
+        pp.groups.push_back(cv::Rect(315, 34, 42, 58)); // third letter
         pp.groups.push_back(cv::Rect(380, 13, 42, 58)); // region #1
         pp.groups.push_back(cv::Rect(427, 13, 42, 58)); // region #2
         pp.groups.push_back(cv::Rect(474, 13, 42, 58)); // region #3
