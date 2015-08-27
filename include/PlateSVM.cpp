@@ -61,24 +61,29 @@ void PlateSVM::train()
     svm.train(trainData, classes, Mat(), Mat(), params);
     svm.save("plates_svm_classifier.yml");
 }
+void PlateSVM::init(const std::string& trainDataPath)
+{
+    svm.load(trainDataPath.c_str());
+}
 std::vector<cv::Mat> PlateSVM::predict(std::vector<cv::Mat> &plates)
 {
     vector<cv::Mat> true_plates;
     for (size_t i = 0; i < plates.size(); ++i)
-        {
-            cv::Mat plate = plates[i];
-            imshow("plate?",plate);
-            waitKey();
-            plate.convertTo(plate, CV_32F);
-            plate = plate.reshape(0, 1);
-            float class_id = svm.predict(plate);
-            if (class_id == 1.0f) {
-                std::cout<<"plate";
-                true_plates.push_back(plate);
-                // It's a plate.
-            } else {
-                std::cout<<"not a plate";
-                // It's not a plate.
-            }
+    {
+        cv::Mat plate = plates[i];
+        imshow("plate?",plate);
+        waitKey();
+        plate.convertTo(plate, CV_32F);
+        plate = plate.reshape(0, 1);
+        float class_id = svm.predict(plate);
+        if (class_id == 1.0f) {
+            std::cout<<"plate";
+            true_plates.push_back(plate);
+            // It's a plate.
+        } else {
+            std::cout<<"not a plate";
+            // It's not a plate.
         }
+    }
+    return true_plates;
 }

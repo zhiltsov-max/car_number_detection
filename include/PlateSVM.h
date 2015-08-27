@@ -14,9 +14,10 @@ class PlateSVM
 public: 
     PlateSVM(void);
     ~PlateSVM(void){}
-    void getNegatives(cv::String &path);
-    void getPositives(cv::String &path);
+    void getNegatives(const cv::String &path);
+    void getPositives(const cv::String &path);
     void train();
+    void init(const std::string& trainDataPath);
     std::vector<cv::Mat> predict(std::vector<cv::Mat> &plates);
 };
 

@@ -30,7 +30,8 @@ static const char* params =
     "{ h | help      |false| Print help              }"
     "{ t | train     |false| Train classifier <name> }"
     "{ p | pos       |     | Positives for training  }"
-    "{ n | neg       |     | Negatives for training  }";
+    "{ n | neg       |     | Negatives for training  }"
+    "{ n | tdata     |false| Train data              }";
 
 int main(int argc, char* argv[]) {
 	cv::CommandLineParser parser(argc, argv, params);
@@ -38,6 +39,7 @@ int main(int argc, char* argv[]) {
     std::string classifierName = parser.get<std::string>("train");
     std::string positivesNamesPath = parser.get<std::string>("pos");
     std::string negativesNamesPath = parser.get<std::string>("neg");
+    std::string trainDataPath = parser.get<std::string>("tdata");
 	
     if (classifierName.empty() && imagePath.empty()) {
         printHelp();
@@ -57,17 +59,20 @@ int main(int argc, char* argv[]) {
         //TNumberPlateDetector detector;
         
         std::cout << "Image: " << imagePath << std::endl;
-        
         PlateSVM psvm;
-        psvm.getNegatives(negativesNamesPath);
-        psvm.getPositives(positivesNamesPath);
-        psvm.train();
-
+        if (trainDataPath.empty())
+        {
+            psvm.getNegatives(negativesNamesPath);
+            psvm.getPositives(positivesNamesPath);
+            psvm.train();
+        }else{
+            psvm.init(trainDataPath);
+        }
         RegionDetector det(false);
         Mat tmp = imread(imagePath);
         vector <Mat> plates;
         plates = det.proceed(tmp);
-        psvm.predict(plates);
+        plates = psvm.predict(plates);
         
         while (1)
         {
