@@ -14,18 +14,17 @@ if (__name__ == "__main__"):
 	# draw.text((x, y), "Text", (r, g, b), font=font)
 
 	data = open("data.txt", "wb+")
-	# Initialize symbol images
-	font = ImageFont.truetype("RoadNumbers2.0.ttf", 16)
+	
 	symbols = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "H", "K", "M", "O", "P", "T", "X", "Y"]
 
 	symbolExamples = 100
 
 	for i in xrange(0, len(symbols)):
 		for idx in xrange(0, symbolExamples):
-			font = ImageFont.truetype("RoadNumbers2.0.ttf", randint(12, 18))
+			font = ImageFont.truetype("RoadNumbers2.0.ttf", randint(12, 20))
 			img = Image.new("1", (10, 10), (0))
 			draw = ImageDraw.Draw(img)
-			draw.text((uniform(-2, 4), uniform(-2, 4)), symbols[i], (randint(0, 255)), font = font)
+			draw.text((uniform(-3, 6), uniform(-3, 6)), symbols[i], (randint(0, 255)), font = font)
 
 			name = "p_" + str(i) + "_" + str(idx) + ".png"
 			img.save(name, "PNG")

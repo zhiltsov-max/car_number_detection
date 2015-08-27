@@ -12,8 +12,8 @@ bool RegionDetector::verifySizes(const RotatedRect& rect) {
     //Car plate size: 520x112 aspect 4,7272
     double aspect = 4.7272;
     //Set a min and max area. All other patchs are discarded
-    int min = (int)15*aspect*15; // minimum area
-    int max = (int)125*aspect*125; // maximum area
+    int min = (int)(15.0*aspect*15.0); // minimum area
+    int max = (int)(125.0*aspect*125.0); // maximum area
     //Get only patchs that match to a respect ratio.
     double rmin = aspect-aspect*error;
     double rmax = aspect+aspect*error;

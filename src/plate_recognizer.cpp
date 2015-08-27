@@ -19,7 +19,7 @@ const TNumberPlateDetector::Recognizer::PlateParameters& TNumberPlateDetector::R
     if (RUSSIAN_ == nullptr) { 
         RUSSIAN_ = new TNumberPlateDetector::Recognizer::PlateParameters();
         auto& pp = *RUSSIAN_;
-        pp.groupAppearanceThreshold = 0.5;
+        pp.groupAppearanceThreshold = 0.35;
 
         // GOST 50577-93
         pp.groups.push_back(cv::Rect(30, 34, 42, 58)); // first letter
@@ -78,8 +78,6 @@ void TNumberPlateDetector::Recognizer::preprocessImage(const cv::Mat& plate, cv:
             cv::resize(img_thresh, img_thresh, plateParameters.size, 0, 0, CV_INTER_AREA);
         }
     }
-
-
 
     out = img_thresh;
 }
@@ -219,6 +217,7 @@ float test(const cv::Mat& samples, const cv::Mat& classes, SymbolRecognizer& rec
     float errors = 0;
     for (int i = 0; i < samples.rows; ++i) {
         int result = recognizer.recognizeSymbol(samples.row(i).reshape(0, 10));
+		std::cout << "Test. Result: " << result << " for " << classes.at<int>(i) << std::endl;
         if (result != classes.at<int>(i)) {
             errors++;
         }
@@ -236,7 +235,6 @@ void TNumberPlateDetector::Recognizer::train() {
         return;
     }
 
-    int i = 0;
     while (info.good() == true) {
         std::string img_name;
         std::string img_class_;
@@ -247,18 +245,13 @@ void TNumberPlateDetector::Recognizer::train() {
         if (img.empty() == false) {
             data.push_back(img.reshape(0, 1));
             
-            int img_class = std::atoi(img_class_.c_str());
-
-            cv::Mat class_(1, classCount, CV_32S, cv::Scalar(0));
-            if (0 <= img_class ) {
-                class_.at<int>(img_class) = 1;
-            }
+            int class_ = std::atoi(img_class_.c_str());
             classes.push_back(class_);
         }
     }
     info.close();
 
-    const int trainDataSize = 1000;
+    const int trainDataSize = 2000;
     std::vector<bool> lines(data.rows);
     for(int i = 0; i < trainDataSize; ++i) { 
         int idx = rand() % data.rows;    
@@ -287,7 +280,11 @@ void TNumberPlateDetector::Recognizer::train() {
         symbolInfo.repr = symbols[i];
         symbolRecognizer.addSymbolInfo(i, symbolInfo);
     }
-    symbolRecognizer.train(trainData, trainClasses, "recognizer_trained.xml");
+	try {
+		symbolRecognizer.train(trainData, trainClasses, "recognizer_trained.xml");
+		std::cout << "Trained with error: " << test(samples, samplesClasses, symbolRecognizer) << std::endl;
+	} catch (std::exception& e) {
+		std::cout << "Error: " << e.what() << std::endl;
+	}    
     
-    std::cout << "Trained with error: " << test(samples, samplesClasses, symbolRecognizer) << std::endl;
 }
