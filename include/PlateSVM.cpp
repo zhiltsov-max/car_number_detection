@@ -6,7 +6,7 @@ PlateSVM::PlateSVM(void)
     params.svm_type = cv::SVM::C_SVC;
     params.kernel_type = cv::SVM::LINEAR;
 }
-void PlateSVM::getPositives(cv::String &path)
+void PlateSVM::getPositives(const cv::String &path)
 {
     std::ifstream info(path);
     if (info.is_open() == false) {
@@ -20,7 +20,7 @@ void PlateSVM::getPositives(cv::String &path)
     }
     info.close();
 }
-void PlateSVM::getNegatives(cv::String &path)
+void PlateSVM::getNegatives(const cv::String &path)
 {
     std::ifstream info(path);
     if (info.is_open() == false) {

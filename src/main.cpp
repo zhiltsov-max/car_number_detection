@@ -31,7 +31,7 @@ static const char* params =
     "{ t | train     |false| Train classifier <name> }"
     "{ p | pos       |     | Positives for training  }"
     "{ n | neg       |     | Negatives for training  }"
-    "{ n | tdata     |false| Train data              }";
+    "{ n | tdata     |     | Train data              }";
 
 int main(int argc, char* argv[]) {
 	cv::CommandLineParser parser(argc, argv, params);
