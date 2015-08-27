@@ -3,19 +3,18 @@
 
 #include <string>
 #include "opencv2\core\core.hpp"
-#include "opencv2\highgui\highgui.hpp"
 #include "opencv2\ml\ml.hpp"
-#include <fstream>
 
 class PlateSVM
 {
 public: 
-    PlateSVM(void);
-    ~PlateSVM(void){}
-    void getNegatives(cv::String& path);
-    void getPositives(cv::String& path);
+    PlateSVM();
+
+    void init(const std::string& trainDataPath);
+    void getNegatives(const cv::String& path);
+    void getPositives(const cv::String& path);
     void train();
-    std::vector<cv::Mat> predict(std::vector<cv::Mat>& plates);
+    std::vector<cv::Mat> predict(const std::vector<cv::Mat>& plates);
 
 private:
     cv::SVMParams params;

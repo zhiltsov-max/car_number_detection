@@ -1,15 +1,16 @@
 #include "plate_svm.hpp"
-
+#include "opencv2\highgui\highgui.hpp"
+#include <fstream>
 
 using namespace cv;
 
 
-PlateSVM::PlateSVM(void) {
+PlateSVM::PlateSVM() {
     params.svm_type = cv::SVM::C_SVC;
     params.kernel_type = cv::SVM::LINEAR;
 }
 
-void PlateSVM::getPositives(cv::String& path) {
+void PlateSVM::getPositives(const cv::String& path) {
     std::ifstream info(path);
     if (info.is_open() == false) {
         std::cerr << "Failed to open file 'positives/names.txt'." << std::endl;
@@ -23,7 +24,7 @@ void PlateSVM::getPositives(cv::String& path) {
     info.close();
 }
 
-void PlateSVM::getNegatives(cv::String &path) {
+void PlateSVM::getNegatives(const cv::String& path) {
     std::ifstream info(path);
     if (info.is_open() == false) {
         std::cerr << "Failed to open file 'negatives/names.txt'." << std::endl;
@@ -64,24 +65,28 @@ void PlateSVM::train() {
     svm.save("plates_svm_classifier.yml");
 }
 
-std::vector<cv::Mat> PlateSVM::predict(std::vector<cv::Mat>& plates)
-{
+std::vector<cv::Mat> PlateSVM::predict(const std::vector<cv::Mat>& plates) {
     vector<cv::Mat> true_plates;
-    for (size_t i = 0; i < plates.size(); ++i)
-        {
-            cv::Mat plate = plates[i];
-            imshow("plate?", plate);
-            waitKey();
-            plate.convertTo(plate, CV_32F);
-            plate = plate.reshape(0, 1);
-            float class_id = svm.predict(plate);
-            if (class_id == 1.0f) {
-                std::cout<<"plate";
-                true_plates.push_back(plate);
-                // It's a plate.
-            } else {
-                std::cout<<"not a plate";
-                // It's not a plate.
-            }
+    for (size_t i = 0; i < plates.size(); ++i) {
+        cv::Mat plate = plates[i];
+        imshow("plate?", plate);
+        waitKey();
+        plate.convertTo(plate, CV_32F);
+        plate = plate.reshape(0, 1);
+        float class_id = svm.predict(plate);
+        if (class_id == 1.0f) {
+            std::cout<<"plate";
+            true_plates.push_back(plate);
+            // It's a plate.
+        } else {
+            std::cout<<"not a plate";
+            // It's not a plate.
         }
+    }
+
+    return true_plates;
+}
+
+void PlateSVM::init(const std::string& trainDataPath) {
+    svm.load(trainDataPath.c_str());
 }

@@ -1,27 +1,27 @@
-#pragma once
+#ifndef REGION_DETECTOR_H
+#define REGION_DETECTOR_H
+
 #include "opencv2/core/core.hpp"
-#include "opencv2/features2d/features2d.hpp"
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2\imgproc\imgproc.hpp"
 #include <iostream>
-/*
-//Algorithm
+#include <vector>
 
 
-*/
-using namespace cv;
-class RegionDetector
-{
-private:
-	Mat img_temp;
-    Mat histeq(Mat src);
-    bool verifySizes(const RotatedRect& rect);
+class RegionDetector {
 public:
-
-	RegionDetector(void);
-	virtual ~RegionDetector(void){}
-    void threshold(Mat src);
+    void threshold(const cv::Mat& img);
 	void close();
     void getMask();
+    std::vector<cv::Mat> proceed(const cv::Mat& src);
+
+private:
+    std::vector<cv::RotatedRect> rects;
+
+    cv::Mat histeq(const cv::Mat& src);
+    bool verifySizes(const cv::RotatedRect& rect);
+    void preprocess(const cv::Mat& src, cv::Mat& out);
+    std::vector<cv::Mat> floodFillMask(const cv::Mat& src, cv::Mat& working);
+    void getContours(const cv::Mat& src, cv::Mat& working);
+
 };
 
+#endif // REGION_DETECTOR_H

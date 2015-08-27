@@ -41,6 +41,7 @@ int main(int argc, char* argv[]) {
         
         std::cout << "Image: " << imagePath << std::endl;
         std::cout << "Detected plate number: " << detector.getNumber(image) << std::endl;
+        cv::waitKey();
         return 0;
     }
 

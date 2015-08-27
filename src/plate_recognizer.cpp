@@ -19,7 +19,7 @@ const TNumberPlateDetector::Recognizer::PlateParameters& TNumberPlateDetector::R
     if (RUSSIAN_ == nullptr) { 
         RUSSIAN_ = new TNumberPlateDetector::Recognizer::PlateParameters();
         auto& pp = *RUSSIAN_;
-        pp.groupAppearanceThreshold = 0.8;
+        pp.groupAppearanceThreshold = 0.5;
 
         // GOST 50577-93
         pp.groups.push_back(cv::Rect(30, 34, 42, 58)); // first letter
@@ -38,7 +38,7 @@ const TNumberPlateDetector::Recognizer::PlateParameters& TNumberPlateDetector::R
         pp.symbolParameters.aspectRatio = 42.0 / 76.0;
         pp.symbolParameters.minHeight = 42.0 * 0.7;
         pp.symbolParameters.maxHeight = 42.0 * 1.3;
-        pp.symbolParameters.maxUsedAreaPercent = 0.8;
+        pp.symbolParameters.maxUsedAreaPercent = 0.9;
     }
     return *RUSSIAN_;
 }
@@ -50,6 +50,20 @@ TNumberPlateDetector::Recognizer::PlateParameters::SymbolParameters::SymbolParam
     aspectRatio(RECOGNIZER_SYMBOL_ASPECT_RATIO),
     maxUsedAreaPercent(0.8)
 {}
+
+void TNumberPlateDetector::Recognizer::init() {
+    symbolRecognizer.load("recognizer/recognizer.xml");
+    
+    const int classCount = 23;
+    symbolRecognizer.setClassCount(classCount);
+
+    char symbols[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'H', 'K', 'M', 'O', 'P', 'T', 'X', 'Y'};    
+    SymbolRecognizer::SymbolInfo symbolInfo;
+    for (int i = 0; i < classCount; ++i) {
+        symbolInfo.repr = symbols[i];
+        symbolRecognizer.addSymbolInfo(i, symbolInfo);
+    }
+}
 
 void TNumberPlateDetector::Recognizer::preprocessImage(const cv::Mat& plate, cv::Mat& out) {
     cv::Mat img_thresh;
@@ -65,9 +79,7 @@ void TNumberPlateDetector::Recognizer::preprocessImage(const cv::Mat& plate, cv:
         }
     }
 
-#if defined(_DEBUG_)
-    cv::imshow("Thresh", img_thresh);
-#endif
+
 
     out = img_thresh;
 }
@@ -77,12 +89,21 @@ TNumberPlateDetector::Number TNumberPlateDetector::Recognizer::recognizeNumber(c
 
     cv::Mat img;
     preprocessImage(plate, img);
+#if defined(_DEBUG_)
+    cv::imshow("Preprocessed", img);
+#endif
 
     cv::Mat img_contours = img.clone();
     std::vector<std::vector< cv::Point >> contours;
-    cv::findContours(img_contours, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE);
+    cv::findContours(img_contours, contours, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE);
 
 #if defined(_DEBUG_)
+    cv::Mat regions = img.clone();
+    for (auto it = plateParameters.groups.cbegin(), iend = plateParameters.groups.cend(); it != iend; ++it) {
+        cv::rectangle(regions, *it, cv::Scalar(128));
+    }
+    cv::imshow("Regions", regions);
+
     std::cout << "Found contours: " << contours.size() << std::endl;
     for (auto it = contours.cbegin(), iend = contours.cend(); it != iend; ++it) {
         cv::Scalar color(255);
@@ -105,6 +126,7 @@ TNumberPlateDetector::Number TNumberPlateDetector::Recognizer::recognizeNumber(c
         if (verifySymbolFrame(frame, img) == true) {
             frame.group = determineSymbolGroup(frame.position, cv::Size(img.cols, img.rows));
             if (plateParameters.groups.size() <= frame.group) {
+                std::cout << "Rejected by group" << std::endl;
                 continue;
             }
 
@@ -113,9 +135,9 @@ TNumberPlateDetector::Number TNumberPlateDetector::Recognizer::recognizeNumber(c
     }
 
 #if defined(_DEBUG_)
-    std::cout << "Found contours: " << symbolFrames.size() << std::endl;
+    std::cout << "Found symbols: " << symbolFrames.size() << std::endl;
     for (auto it = symbolFrames.cbegin(), iend = symbolFrames.cend(); it != iend; ++it) {
-        cv::imshow(std::to_string(it - symbolFrames.cbegin()), *it);
+        cv::imshow(std::to_string((long long)(it - symbolFrames.cbegin())), (*it).frame);
     }
     cv::waitKey();
 #endif
@@ -144,11 +166,14 @@ TNumberPlateDetector::Recognizer::SymbolGroup TNumberPlateDetector::Recognizer::
 }
 
 bool TNumberPlateDetector::Recognizer::verifySymbolFrame(const SymbolFrame& frame, const cv::Mat& plate) {    
+    return true;
     if (verifySymbolPosition(frame.position, cv::Size(plate.cols, plate.rows)) == false) {
+        std::cout << "Rejected by position" << std::endl;
         return false;
     }
 
     if (verifySymbolSize(frame.frame) == false) {
+        std::cout << "Rejected by size" << std::endl;
         return false;
     }
 
@@ -233,15 +258,26 @@ void TNumberPlateDetector::Recognizer::train() {
     }
     info.close();
 
-    int trainDataSize = 1000;
-    int trainDataBegin = rand() % (data.rows - trainDataSize);
-    symbolRecognizer.prepareTrainData(data(cv::Range(trainDataBegin, trainDataBegin + trainDataSize), cv::Range(0, data.cols)).clone(), trainData);
-    samples = data(cv::Range(0, trainDataBegin), cv::Range(0, data.cols)).clone();
-    samples.push_back(data(cv::Range(trainDataBegin + trainDataSize, data.rows), cv::Range(0, data.cols)));
-
-    trainClasses = classes(cv::Range(trainDataBegin, trainDataBegin + trainDataSize), cv::Range(0, classes.cols)).clone();
-    samplesClasses = classes(cv::Range(0, trainDataBegin), cv::Range(0, classes.cols)).clone();
-    samplesClasses.push_back(classes(cv::Range(trainDataBegin + trainDataSize, classes.rows), cv::Range(0, classes.cols)));
+    const int trainDataSize = 1000;
+    std::vector<bool> lines(data.rows);
+    for(int i = 0; i < trainDataSize; ++i) { 
+        int idx = rand() % data.rows;    
+        while (lines[idx] == true) {
+            idx = rand() % data.rows;
+        }
+        lines[idx] = true;
+    }
+    for (int i = 0, iend = lines.size(); i != iend; ++i) {
+        if (lines[i] == true) {
+            cv::Mat t;
+            symbolRecognizer.prepareTrainData(data.row(i), t);
+            trainData.push_back(t);
+            trainClasses.push_back(classes.row(i));
+        } else {
+            samples.push_back(data.row(i));
+            samplesClasses.push_back(classes.row(i));
+        }
+    }
 
     symbolRecognizer.setClassCount(classCount);
 
@@ -249,7 +285,7 @@ void TNumberPlateDetector::Recognizer::train() {
     SymbolRecognizer::SymbolInfo symbolInfo;
     for (int i = 0; i < classCount; ++i) {
         symbolInfo.repr = symbols[i];
-        symbolRecognizer.addSymbolInfo(0, symbolInfo);
+        symbolRecognizer.addSymbolInfo(i, symbolInfo);
     }
     symbolRecognizer.train(trainData, trainClasses, "recognizer_trained.xml");
     

@@ -19,6 +19,7 @@ public:
 
     Number getNumber(const cv::Mat& frame);
     void train();
+
 private:
     class Recognizer;
 };

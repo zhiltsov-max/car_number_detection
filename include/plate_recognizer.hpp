@@ -36,6 +36,7 @@ public:
     PlateParameters& getPlateParameters();
 
     void train();
+    void init();
 private:
     PlateParameters plateParameters;
 

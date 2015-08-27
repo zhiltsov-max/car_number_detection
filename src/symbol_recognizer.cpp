@@ -1,5 +1,6 @@
 #include "symbol_recognizer.h"
 #include "opencv2\imgproc\imgproc.hpp"
+#include "opencv2\highgui\highgui.hpp"
 
 
 const double SymbolRecognizer::SYMBOL_ACCEPT_THRESHOLD = 0.75;
@@ -14,8 +15,13 @@ struct SymbolRecognizer::Features {
 };
 
 SymbolRecognizer::SymbolClass SymbolRecognizer::recognizeSymbol(const cv::Mat& symbol) {
+    cv::Mat img;
+    cv::resize(symbol, img, FRAME_SIZE, 0, 0, CV_INTER_AREA);
+    cv::imshow("Classifier", img);
+    //cv::waitKey();
+
     Features symbolFeatures;
-    extractFeatures(symbol, symbolFeatures);
+    extractFeatures(img, symbolFeatures);
 
     cv::Mat probabilities;
     recognizer.predict(symbolFeatures.completed, probabilities);
@@ -46,26 +52,21 @@ void SymbolRecognizer::findHistograms(const cv::Mat& img, SymbolRecognizer::Feat
     }
 
     // normalize
-    double min = 0.0;
-    double max = 255.0; //0.0;
-    //cv::minMaxLoc(features.vhist, &min, &max);
-    features.vhist *= 1.0 / (max - min);
-
-    max = 255.0;
-    //cv::minMaxLoc(features.hhist, &min, &max);
-    features.hhist *= 1.0 / (max - min);
+    features.vhist *= 1.0 / 10.0;
+    features.hhist *= 1.0 / 10.0;
 }
 
 void SymbolRecognizer::extractFeatures(const cv::Mat& img, Features& features) {
+    CV_Assert(img.rows == FRAME_SIZE.height && img.cols == FRAME_SIZE.width);
     // Warning! Be careful with indicies.
-    features.completed.create(1, img.rows + img.cols + FRAME_SIZE.area(), CV_32F);
+    features.completed.create(1, img.rows + img.cols/* + FRAME_SIZE.area()*/, CV_32F);
     features.hhist = features.completed(cv::Range(0, 1), cv::Range(0, img.rows));
     features.vhist = features.completed(cv::Range(0, 1), cv::Range(img.rows, img.rows + img.cols));
     findHistograms(img, features);
         
-    cv::resize(img, features.imgSample, FRAME_SIZE, 0, 0, CV_INTER_AREA); //maybe Lanczos
-    features.imgSample = features.imgSample.reshape(0, 1);
-    features.imgSample.copyTo(features.completed(cv::Range(0, 1), cv::Range(features.hhist.total() + features.vhist.total(), features.completed.cols)));
+    //cv::resize(img, features.imgSample, FRAME_SIZE, 0, 0, CV_INTER_AREA); //maybe Lanczos
+    //features.imgSample = features.imgSample.reshape(0, 1);
+    //features.imgSample.copyTo(features.completed(cv::Range(0, 1), cv::Range(features.hhist.total() + features.vhist.total(), features.completed.cols)));
 }
 
 void SymbolRecognizer::setClassCount(size_t count) {
