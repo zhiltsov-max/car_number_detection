@@ -68,7 +68,7 @@ int main(int argc, char* argv[]) {
         }else{
             psvm.init(trainDataPath);
         }
-        RegionDetector det(false);
+        RegionDetector det(true);
         Mat tmp = imread(imagePath);
         vector <Mat> plates;
         plates = det.proceed(tmp);

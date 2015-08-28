@@ -51,21 +51,25 @@ void RegionDetector::preprocessing()
     cv::cvtColor(src,img_gray, CV_BGR2GRAY);
     blur(img_gray, img_gray, Size(5,5));
     if (showimage)
+        imwrite("blur.jpg",img_gray);
         imshow("blur", img_gray);
     //находим скопления горизонтальных линий
     Mat img_sobel;
     Sobel(img_gray, img_sobel, CV_8U, 1,0);
     if (showimage)
+        imwrite("sobel.jpg",img_sobel);
         imshow("sobel", img_sobel);
     //threshold
     Mat img_threshold;
 	cv::threshold(img_sobel,img_threshold, 0, 255, CV_THRESH_OTSU+CV_THRESH_BINARY);
     if (showimage)
+        imwrite("threshold.jpg",img_threshold);
         imshow("threshold", img_threshold);
 	//морфологическое закрытие
 	Mat element = getStructuringElement(MORPH_RECT, Size(23,5));
 	morphologyEx(img_threshold, img_temp, CV_MOP_CLOSE, element);
     if (showimage)
+        imwrite("close.jpg",img_temp);
         imshow("close", img_temp);
 }
 void RegionDetector::getContours()
@@ -98,6 +102,7 @@ void RegionDetector::getContours()
              cv::Scalar(255,0,0),// in blue
              1); // thickness
     if (showimage)
+        imwrite("contours.jpg",img_temp);
         imshow("contours",img_temp);
 }
 vector <Mat> RegionDetector::floodfillmask()
@@ -139,6 +144,7 @@ vector <Mat> RegionDetector::floodfillmask()
                                   flags); 
         }
         if (showimage)
+            imwrite("mask.jpg",mask);
             imshow("MASK", mask);
 
         vector<Point> pointsInterest; 
@@ -160,6 +166,7 @@ vector <Mat> RegionDetector::floodfillmask()
                 line(img_temp, rect_points[j], rect_points[(j+1)%4], Scalar(0,0,255));  
             }
             if (showimage)
+                imwrite("red.jpg",img_temp);
                 imshow("red",img_temp);
             //матрица поворота
             float r = (float)minRect.size.width / (float)minRect.size.height; 
