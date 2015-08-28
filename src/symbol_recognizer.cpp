@@ -21,19 +21,8 @@ SymbolRecognizer::SymbolClass SymbolRecognizer::recognizeSymbol(const cv::Mat& s
     Features symbolFeatures;
     extractFeatures(img, symbolFeatures);
 
-    cv::Mat probabilities;
-    recognizer.predict(symbolFeatures.completed, probabilities);
-
-    cv::Point maxLoc;
-    double maxVal;
-    cv::minMaxLoc(probabilities, 0, &maxVal, 0, &maxLoc);
-	maxVal /= 2 * 1.7159; /*read docs*/
-	maxVal += 0.5;
-	std::cout << "Max prob: " << maxVal << " at " << maxLoc.x << std::endl;
-    if (maxVal < SYMBOL_ACCEPT_THRESHOLD) {
-        return UNRECOGNIZED_SYMBOL;
-    }
-    return maxLoc.x;
+    float class_id = recognizer.predict(symbolFeatures.completed);
+    return (int)class_id;
 }
 
 const SymbolRecognizer::SymbolInfo& SymbolRecognizer::getSymbolInfo(const SymbolRecognizer::SymbolClass& class_) {
@@ -60,10 +49,10 @@ void SymbolRecognizer::findHistograms(const cv::Mat& img, SymbolRecognizer::Feat
 void SymbolRecognizer::extractFeatures(const cv::Mat& img, Features& features) {
     CV_Assert(img.rows == FRAME_SIZE.height && img.cols == FRAME_SIZE.width);
     // Warning! Be careful with indicies.
-    features.completed.create(1,/* img.rows + img.cols + */FRAME_SIZE.area(), CV_32F);
-    //features.hhist = features.completed(cv::Range(0, 1), cv::Range(0, img.rows));
-    //features.vhist = features.completed(cv::Range(0, 1), cv::Range(img.rows, img.rows + img.cols));
-    //findHistograms(img, features);
+    features.completed.create(1,img.rows + img.cols + FRAME_SIZE.area(), CV_32F);
+    features.hhist = features.completed(cv::Range(0, 1), cv::Range(0, img.rows));
+    features.vhist = features.completed(cv::Range(0, 1), cv::Range(img.rows, img.rows + img.cols));
+    findHistograms(img, features);
         
     cv::resize(img, features.imgSample, FRAME_SIZE, 0, 0, CV_INTER_AREA); //maybe Lanczos
     features.imgSample = features.imgSample.reshape(0, 1);
@@ -79,50 +68,9 @@ void SymbolRecognizer::addSymbolInfo(const SymbolClass& class_, const SymbolInfo
 }
 
 void SymbolRecognizer::train(const cv::Mat& trainData, const cv::Mat& appearances, const char* outputFileName) {
-    cv::Mat layerSizes(1, 30, CV_32S);
-    layerSizes.at<int>(0) = trainData.cols;
-	layerSizes.at<int>(1) = 10; //magic
-	layerSizes.at<int>(2) = 10; //magic
-	layerSizes.at<int>(3) = 10; //magic
-	layerSizes.at<int>(4) = 10; //magic
-	layerSizes.at<int>(5) = 10; //magic
-	layerSizes.at<int>(6) = 10; //magic
-	layerSizes.at<int>(7) = 10; //magic
-	layerSizes.at<int>(8) = 10; //magic
-	layerSizes.at<int>(9) = 10; //magic
-	layerSizes.at<int>(10) = 10; //magic
-	layerSizes.at<int>(11) = 10; //magic
-	layerSizes.at<int>(12) = 10; //magic
-	layerSizes.at<int>(13) = 10; //magic
-	layerSizes.at<int>(14) = 10; //magic
-	layerSizes.at<int>(15) = 10; //magic
-	layerSizes.at<int>(16) = 10; //magic
-	layerSizes.at<int>(17) = 10; //magic
-	layerSizes.at<int>(18) = 10; //magic
-	layerSizes.at<int>(19) = 10; //magic
-	layerSizes.at<int>(20) = 10; //magic
-	layerSizes.at<int>(21) = 10; //magic
-	layerSizes.at<int>(22) = 10; //magic
-	layerSizes.at<int>(23) = 10; //magic
-	layerSizes.at<int>(24) = 10; //magic
-	layerSizes.at<int>(25) = 10; //magic
-	layerSizes.at<int>(26) = 10; //magic
-	layerSizes.at<int>(27) = 10; //magic
-	layerSizes.at<int>(28) = 10; //magic
-    layerSizes.at<int>(29) = (int)classes.size(); //0.94% errors...
-    recognizer.create(layerSizes, CvANN_MLP::SIGMOID_SYM);
-
-    cv::Mat trainClasses(trainData.rows, classes.size(), CV_32F, cv::Scalar(0));
-    for (int i = 0; i < trainClasses.rows; ++i) {
-        trainClasses.at<float>(i, appearances.at<int>(i)) = 1.f;
-    }
-
-    cv::Mat weights(1, trainData.rows, CV_32F, cv::Scalar::all(1));
-
-	CvANN_MLP_TrainParams trainParams;
-	trainParams.train_method = CvANN_MLP_TrainParams::BACKPROP;
-    recognizer.train(trainData, trainClasses, weights, cv::Mat(), trainParams);
-    recognizer.save(outputFileName);
+	cv::SVMParams params;
+	recognizer.train(trainData, appearances.reshape(0, appearances.cols), cv::Mat(), cv::Mat(), params);
+	recognizer.save(outputFileName);
 }
 
 void SymbolRecognizer::load(const char* fileName) {

@@ -24,7 +24,7 @@ if (__name__ == "__main__"):
 			font = ImageFont.truetype("RoadNumbers2.0.ttf", randint(12, 20))
 			img = Image.new("1", (10, 10), (0))
 			draw = ImageDraw.Draw(img)
-			draw.text((uniform(-3, 6), uniform(-3, 6)), symbols[i], (randint(0, 255)), font = font)
+			draw.text((uniform(-2, 0), uniform(-2, 0)), symbols[i], (randint(0, 255)), font = font)
 
 			name = "p_" + str(i) + "_" + str(idx) + ".png"
 			img.save(name, "PNG")

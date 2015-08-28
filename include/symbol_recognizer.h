@@ -34,8 +34,8 @@ private:
     typedef std::vector<SymbolInfo> Classes;
     Classes classes;
 
-    typedef cv::NeuralNet_MLP ANN;
-    ANN recognizer;
+	typedef cv::SVM SVM;
+	SVM recognizer;
 };
 
 #endif // SYMBOL_RECOGNIZER_H
